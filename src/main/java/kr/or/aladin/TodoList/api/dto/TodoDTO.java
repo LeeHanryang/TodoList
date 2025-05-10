@@ -1,0 +1,42 @@
+package kr.or.aladin.TodoList.api.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import kr.or.aladin.TodoList.api.domain.Todo;
+import kr.or.aladin.TodoList.api.domain.User;
+import lombok.Builder;
+import lombok.Getter;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+
+@Getter
+@Builder
+public class TodoDTO {
+
+    private final UUID id;
+    @NotBlank
+    @Size(max = 100)
+    private final String title;
+    private final String content;
+    private final boolean completed;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
+
+    /* ───────── Entity → DTO 매핑 ───────── */
+    public static TodoDTO from(Todo entity) {
+        return TodoDTO.builder()
+                .id(entity.getId())
+                .title(entity.getTitle())
+                .content(entity.getContent())
+                .completed(entity.isCompleted())
+                .build();
+    }
+
+    /* 필요 시 DTO → Entity 변환용 */
+    public Todo toEntity(User user) {
+        return Todo.create(user, title, content, completed);
+
+    }
+}

@@ -1,0 +1,74 @@
+package kr.or.aladin.TodoList.config;
+
+import kr.or.aladin.TodoList.api.repository.UserRepository;
+import kr.or.aladin.TodoList.security.jwt.JwtAuthenticationFilter;
+import kr.or.aladin.TodoList.security.oauth2.OAuth2AuthenticationSuccessHandler;
+import kr.or.aladin.TodoList.security.oauth2.OAuth2UserService;
+
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService
+import kr.or.aladin.TodoList.security.principal.CustomUserPrincipal;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+
+@Configuration
+@EnableMethodSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final UserRepository userRepository; // JPA
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, OAuth2UserService oAuth2UserService, OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/auth/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/api/v1/auth/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        http
+                .oauth2Login(oauth -> oauth
+                        .userInfoEndpoint(u -> u.userService(oAuth2UserService))
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                );
+
+        return http.build();
+    }
+
+    /* === Spring Security 6: UserDetailsService 필요 === */
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return username -> userRepository.findByUsername(username)
+                .map(CustomUserPrincipal::from)  // or user -> user
+                .orElseThrow(() -> new UsernameNotFoundException(username));
+    }
+
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter();  // ✅ 필터 객체 생성 및 반환
+    }
+}
