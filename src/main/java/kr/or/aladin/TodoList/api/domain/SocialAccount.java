@@ -37,4 +37,15 @@ public class SocialAccount {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    /* ====== 편의 메서드 ====== */
+    public static SocialAccount of(User user, OAuth2Enum provider, String providerId) {
+        return SocialAccount.builder()
+                .provider(provider)
+                .providerId(providerId)
+                .user(user)
+                .build();
+    }
+
+
 }

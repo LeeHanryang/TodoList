@@ -2,60 +2,69 @@ package kr.or.aladin.TodoList.security.oauth2;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import kr.or.aladin.TodoList.api.service.AuthService;
-import kr.or.aladin.TodoList.enums.RoleEnum;
-import kr.or.aladin.TodoList.security.principal.SocialUserPrincipal;
+import kr.or.aladin.TodoList.api.dto.UserDTO;
+import kr.or.aladin.TodoList.api.service.UserService;
+import kr.or.aladin.TodoList.security.jwt.JwtUtill;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.net.URI;
+import java.util.Map;
 import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final AuthService authService;
-    private final String redirectUri = "http://localhost:5173/oauth2/callback";
+    private final JwtUtill jwtUtill;
+    private final UserService userService;
+    private final OAuth2Util oAuth2Util;
+    private final PasswordEncoder passwordEncoder;
+
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
 
-        // 1) authentication에서 우리가 만든 Principal 꺼내기
-        SocialUserPrincipal principal = (SocialUserPrincipal) authentication.getPrincipal();
+        OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
 
-        UUID userId = principal.getInternalId();      // DB PK
-        String username = principal.getUsername();        // DB username
-        String email = principal.getAttribute("email");// OAuth2 공급자에서 받은 이메일
-        // 권한은 GrantedAuthority 컬렉션에서 하나만 꺼내든가, 필요에 따라 모두 넣으세요.
-        String role = principal.getAuthorities().stream()
-                .findFirst()
-                .map(GrantedAuthority::getAuthority)
-                .orElse(RoleEnum.USER.getRole());
+        // OAuth2 provider 정보 가져오기
+        String provider = request.getRequestURI().split("/")[4]; // /login/oauth2/code/{provider}
+        Map<String, Object> attr = oauth2User.getAttributes();
 
-        // 2) 토큰 생성
-        String token = authService.generateToken(
-                userId,
+        String providerId = oAuth2Util.extractProviderId(provider, attr);
+        String email = oAuth2Util.extractEmail(provider, attr);
+        String username = oAuth2Util.extractUserName(provider);
+
+        // OAuth2 제공자로부터 받은 정보로 사용자 조회 또는 생성
+        UserDTO user = userService.processOAuth2User(
                 username,
                 email,
-                role
+                passwordEncoder.encode(UUID.randomUUID().toString()),
+                provider,
+                providerId
         );
 
-        // 3) 프론트로 리다이렉트하면서 token 쿼리 파라미터로 전달
-        URI target = UriComponentsBuilder
-                .fromUriString(redirectUri)
+        // JWT 토큰 생성
+        String token = jwtUtill.generateToken(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRoles().iterator().next()
+        );
+
+
+        // 프론트엔드 리다이렉트 URL에 토큰 추가
+        String targetUrl = UriComponentsBuilder.fromUriString("/oauth2/redirect")
                 .queryParam("token", token)
-                .build()
-                .toUri();
+                .build().toUriString();
 
-        response.sendRedirect(target.toString());
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
-
 }

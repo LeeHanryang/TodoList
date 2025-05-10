@@ -1,9 +1,9 @@
 package kr.or.aladin.TodoList.config;
 
 import kr.or.aladin.TodoList.api.repository.UserRepository;
+import kr.or.aladin.TodoList.api.service.CustomOAuth2UserService;
 import kr.or.aladin.TodoList.security.jwt.JwtAuthenticationFilter;
 import kr.or.aladin.TodoList.security.oauth2.OAuth2AuthenticationSuccessHandler;
-import kr.or.aladin.TodoList.security.oauth2.OAuth2UserService;
 import kr.or.aladin.TodoList.security.principal.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -30,16 +30,20 @@ public class SecurityConfig {
     private final UserRepository userRepository; // JPA
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, OAuth2UserService oAuth2UserService, OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, CustomOAuth2UserService oAuth2UserService, OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/**",
+                                "/users/signup",
+                                "/users/login",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/api/v1/auth/**"
+                                "/oauth2/**",                    // OAuth2 관련 엔드포인트 추가
+                                "/login/oauth2/**"               // OAuth2 콜백 URL 추가
+
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

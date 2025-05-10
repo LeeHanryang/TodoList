@@ -3,11 +3,14 @@ package kr.or.aladin.TodoList.api.service;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import kr.or.aladin.TodoList.api.domain.SocialAccount;
 import kr.or.aladin.TodoList.api.domain.User;
 import kr.or.aladin.TodoList.api.dto.SignUpDTO;
 import kr.or.aladin.TodoList.api.dto.UserDTO;
+import kr.or.aladin.TodoList.api.repository.SocialAccountRepository;
 import kr.or.aladin.TodoList.api.repository.UserRepository;
 import kr.or.aladin.TodoList.enums.ErrorCodeEnum;
+import kr.or.aladin.TodoList.enums.OAuth2Enum;
 import kr.or.aladin.TodoList.enums.RoleEnum;
 import kr.or.aladin.TodoList.exception.ApiException;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ import java.util.UUID;
 public class UserService {
 
     UserRepository userRepository;
+    SocialAccountRepository socialAccountRepository;
     PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -95,13 +99,31 @@ public class UserService {
                     String randomPassword = UUID.randomUUID().toString();
                     String encoded = passwordEncoder.encode(randomPassword);
 
-                    User user = User.builder()
-                            .username(username)
-                            .password(encoded)
-                            .email(email)
-                            .build();
+                    User user = User.create(username, encoded, email);
                     user.addRole(RoleEnum.USER.getRole());
+
                     return userRepository.save(user).toDto();
+                });
+    }
+
+    @Transactional
+    public UserDTO processOAuth2User(String username, String email, String encodedPassword,
+                                     String provider, String providerId) {
+        OAuth2Enum providerEnum = OAuth2Enum.from(provider);
+        // 기존 소셜 계정이 있는지 확인
+        return socialAccountRepository.findByProviderAndProviderId(providerEnum, providerId)
+                .map(sa -> UserDTO.from(sa.getUser()))  // 있으면 기존 사용자 반환
+                .orElseGet(() -> {
+                    // 없으면 새로 생성
+                    User newUser = User.create(username, encodedPassword, email);
+                    newUser.addRole(RoleEnum.USER.getRole());
+
+                    userRepository.save(newUser);
+
+                    // 소셜 계정 정보 저장
+                    socialAccountRepository.save(SocialAccount.of(newUser, providerEnum, providerId));
+
+                    return UserDTO.from(newUser);
                 });
     }
 }
