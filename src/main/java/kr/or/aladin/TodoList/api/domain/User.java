@@ -2,6 +2,7 @@ package kr.or.aladin.TodoList.api.domain;
 
 import jakarta.persistence.*;
 import kr.or.aladin.TodoList.api.dto.UserDTO;
+import kr.or.aladin.TodoList.enums.OAuth2Enum;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
@@ -32,17 +33,19 @@ public class User {
     private String username;
 
     @Column(nullable = false, length = 100)
-    private String password;   // 인코딩 후 저장
+    private String password;
 
     @Column(nullable = false, unique = true, length = 100)
     private String email;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<SocialAccount> socialAccounts = new HashSet<>();
 
     /* 권한 문자열 – 예: ROLE_USER, ROLE_ADMIN */
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role", nullable = false, length = 30)
-    @Enumerated(EnumType.STRING)
     private Set<String> roles = new HashSet<>();
 
     @CreatedDate
@@ -63,6 +66,15 @@ public class User {
         user.password = encodedPassword;
         user.email = email;
         return user;
+    }
+
+    public void addSocialAccount(OAuth2Enum provider, String providerId) {
+        SocialAccount sa = SocialAccount.builder()
+                .provider(provider)
+                .providerId(providerId)
+                .user(this)
+                .build();
+        socialAccounts.add(sa);
     }
 
     public void changeUsername(String username) {

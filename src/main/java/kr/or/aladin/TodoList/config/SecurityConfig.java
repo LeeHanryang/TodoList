@@ -4,12 +4,12 @@ import kr.or.aladin.TodoList.api.repository.UserRepository;
 import kr.or.aladin.TodoList.security.jwt.JwtAuthenticationFilter;
 import kr.or.aladin.TodoList.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import kr.or.aladin.TodoList.security.oauth2.OAuth2UserService;
-
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService
 import kr.or.aladin.TodoList.security.principal.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -70,5 +70,11 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();  // ✅ 필터 객체 생성 및 반환
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
+            throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 }

@@ -36,7 +36,7 @@ public class TodoController {
     /* 2. 전체 Todo 목록 */
     @GetMapping
     public ResponseEntity<List<TodoDTO>> findAll(@AuthenticationPrincipal CustomUserPrincipal principal) {
-        return ResponseEntity.ok(todoService.findAll(principal.username()));
+        return ResponseEntity.ok(todoService.findAll(principal.id()));
     }
 
     /* 3. 단건 조회 */
@@ -63,6 +63,6 @@ public class TodoController {
     @GetMapping("/search")
     public ResponseEntity<List<TodoDTO>> search(@AuthenticationPrincipal CustomUserPrincipal principal,
                                                 @RequestParam("keyword") String keyword) {
-        return ResponseEntity.ok(todoService.search(principal.username(), keyword));
+        return ResponseEntity.ok(todoService.search(principal.id(), keyword));
     }
 }

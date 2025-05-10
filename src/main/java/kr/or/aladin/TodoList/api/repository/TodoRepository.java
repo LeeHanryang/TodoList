@@ -8,9 +8,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface TodoRepository extends JpaRepository<Todo, UUID> {
-    Optional<Todo> findAllByUserIdOrderByCreatedAtDesc(String username);
+    Optional<Todo> findAllByUserIdOrderByCreatedAtDesc(UUID userid);
 
-    List<Todo> findByUserIdAndTitleContaining(String username, String keyword);
+    List<Todo> findByUserIdAndTitleContaining(UUID userid, String keyword);
 
-    Optional<Object> findByUserId(String userId);
+    Optional<Object> findByUserId(UUID userId);
 }

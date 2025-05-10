@@ -30,8 +30,8 @@ public class TodoService {
         return todoRepository.save(todo).toDto();
     }
 
-    public List<TodoDTO> findAll(String username) {
-        return todoRepository.findAllByUserIdOrderByCreatedAtDesc(username)
+    public List<TodoDTO> findAll(UUID id) {
+        return todoRepository.findAllByUserIdOrderByCreatedAtDesc(id)
                 .stream()
                 .map(Todo::toDto)
                 .toList();
@@ -57,8 +57,8 @@ public class TodoService {
         todoRepository.delete(todo);
     }
 
-    public List<TodoDTO> search(String username, String keyword) {
-        return todoRepository.findByUserIdAndTitleContaining(username, keyword)
+    public List<TodoDTO> search(UUID id, String keyword) {
+        return todoRepository.findByUserIdAndTitleContaining(id, keyword)
                 .stream()
                 .map(Todo::toDto)
                 .toList();

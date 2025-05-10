@@ -21,7 +21,7 @@ import java.util.UUID;
 
 @Component
 public class JwtUtill {
-    @Value("${todo.jwt.secret}")          // 256-bit 이상 Base64 문자열 권장
+    @Value("${todo.jwt.secret}")
     private String secret;
 
     @Value("${todo.jwt.expire-seconds:3600}") // 기본 1h
