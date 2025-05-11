@@ -50,7 +50,7 @@ class InvalidIdTest extends IntegrationTestSupport {
                 .getResponse()
                 .getContentAsString();
 
-        String extractedToken = objectMapper.readTree(token).get("token").asText();
+        String extractedToken = objectMapper.readTree(token).get("access_token").asText();
 
         jwt = "Bearer " + extractedToken; // JWT 저장
     }

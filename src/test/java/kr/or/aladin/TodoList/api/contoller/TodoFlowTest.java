@@ -60,7 +60,7 @@ class TodoFlowTest extends IntegrationTestSupport {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        String rawToken = om.readTree(body).get("token").asText();
+        String rawToken = om.readTree(body).get("access_token").asText();
         jwt = "Bearer " + rawToken;
 
         TodoDTO req = TodoDTO.builder()

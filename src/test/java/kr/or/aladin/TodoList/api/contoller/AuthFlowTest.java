@@ -47,7 +47,7 @@ class AuthFlowTest extends IntegrationTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(login)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").exists())
+                .andExpect(jsonPath("$.access_token").exists())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -56,7 +56,7 @@ class AuthFlowTest extends IntegrationTestSupport {
         LoginDTO response = objectMapper.readValue(token, LoginDTO.class);
 
         /* JWT 토큰 유효성 확인 */
-        assertThat("Bearer " + response.getToken())
+        assertThat("Bearer " + response.getAccess_token())
                 .isNotBlank()
                 .matches("^Bearer\\s+[\\w-]+\\.[\\w-]+\\.[\\w-]+$");
 
