@@ -16,25 +16,31 @@ import java.util.Map;
 @Component
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Override
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
 
+        // 토큰 존재 여부에 따라 오류 코드 결정
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
         ErrorCodeEnum errorCode = (header == null || !header.startsWith("Bearer "))
                 ? ErrorCodeEnum.MISSING_TOKEN
                 : ErrorCodeEnum.INVALID_TOKEN;
 
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
-        response.setContentType("application/json;charset=UTF-8");
+        // HTTP 상태‧헤더 지정
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);   // 401
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
 
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("code", errorCode.name());
-        errorResponse.put("message", errorCode.getMessage());
+        // 응답 바디 구성
+        Map<String, Object> body = new HashMap<>();
+        body.put("code", errorCode.name());
+        body.put("message", errorCode.getMessage());
 
-        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+        // 직렬화 및 전송
+        OBJECT_MAPPER.writeValue(response.getOutputStream(), body);
+        response.flushBuffer();   // 반드시 flush
     }
 }

@@ -26,9 +26,9 @@ public class LoginDTO {
     @NotBlank(message = "비밀번호를 입력해주세요")
     private String password;
 
-    private String token;
+    private String access_token;
 
     public LoginDTO(String token) {
-        this.token = token;
+        this.access_token = token;
     }
 }
