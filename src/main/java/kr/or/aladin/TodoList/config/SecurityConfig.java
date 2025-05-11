@@ -22,7 +22,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -49,15 +48,13 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .logout(logout -> logout
-                        .logoutUrl("/logout").logoutSuccessHandler((req, res, auth) -> {
-                            res.setStatus(HttpServletResponse.SC_OK);
-                        })
+                        .logoutUrl("/logout")
+                        .logoutSuccessHandler((req, res, auth) -> res.setStatus(HttpServletResponse.SC_OK))
                         .permitAll())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint)
-                        .accessDeniedHandler(accessDeniedHandler)
-                )
+                        .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/**",
@@ -67,20 +64,14 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/oauth2/**",
                                 "/login/oauth2/**"
-
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(u -> u.userService(oAuth2UserService))
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-        http
-                .oauth2Login(o -> {
-                    o.authorizationEndpoint(a -> a.baseUri("/oauth2/authorize"));
-                    o.redirectionEndpoint(r -> r.baseUri("/oauth2/redirect/*"));
-                    o.userInfoEndpoint(u -> u.userService(oAuth2UserService));
-                    o.successHandler(oAuth2AuthenticationSuccessHandler);
-                })
-                .addFilterAfter(jwtAuthenticationFilter(), OAuth2LoginAuthenticationFilter.class);
-
 
         return http.build();
     }

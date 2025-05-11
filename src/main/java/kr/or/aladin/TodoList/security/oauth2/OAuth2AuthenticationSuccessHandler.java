@@ -6,6 +6,7 @@ import kr.or.aladin.TodoList.api.dto.UserDTO;
 import kr.or.aladin.TodoList.api.service.UserService;
 import kr.or.aladin.TodoList.security.jwt.JwtUtill;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -25,6 +26,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final UserService userService;
     private final OAuth2Util oAuth2Util;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
 
     @Override
@@ -59,9 +63,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 user.getRoles().iterator().next()
         );
 
-
         // 프론트엔드 리다이렉트 URL에 토큰 추가
-        String targetUrl = UriComponentsBuilder.fromUriString("/oauth2/redirect")
+        String targetUrl = UriComponentsBuilder.fromHttpUrl(frontendUrl)
+                .path("/login/oauth2/code/{provider}")
                 .queryParam("token", token)
                 .build().toUriString();
 
