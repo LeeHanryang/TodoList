@@ -33,6 +33,7 @@ public class TodoController {
     @Operation(summary = "Todo 생성", description = "새로운 Todo 항목을 생성합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "생성 성공"),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다.", content = @Content),
             @ApiResponse(responseCode = "404", description = "회원 정보를 찾을 수 없습니다.", content = @Content),
             @ApiResponse(responseCode = "409", description = "이미 존재하는 항목입니다.", content = @Content)
     })
@@ -49,6 +50,7 @@ public class TodoController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공",
                     content = @Content(schema = @Schema(implementation = TodoDTO.class))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다.", content = @Content),
             @ApiResponse(responseCode = "404", description = "리스트를 찾을 수 없습니다.", content = @Content)
     })
     @GetMapping
@@ -61,6 +63,7 @@ public class TodoController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공",
                     content = @Content(schema = @Schema(implementation = TodoDTO.class))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다.", content = @Content),
             @ApiResponse(responseCode = "404", description = "데이터를 찾을 수 없습니다.", content = @Content)
     })
     @GetMapping("/{id}")
@@ -73,6 +76,7 @@ public class TodoController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "수정 성공",
                     content = @Content(schema = @Schema(implementation = TodoDTO.class))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다.", content = @Content),
             @ApiResponse(responseCode = "404", description = "데이터를 찾을 수 없습니다.", content = @Content)
     })
     @PutMapping("/{id}")
@@ -85,6 +89,7 @@ public class TodoController {
     @Operation(summary = "Todo 삭제", description = "Todo ID 에 해당하는 항목을 삭제합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "삭제 성공", content = @Content),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다.", content = @Content),
             @ApiResponse(responseCode = "404", description = "데이터를 찾을 수 없습니다.", content = @Content)
     })
     @DeleteMapping("/{id}")
@@ -98,6 +103,7 @@ public class TodoController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "검색 성공",
                     content = @Content(schema = @Schema(implementation = TodoDTO.class))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다.", content = @Content),
             @ApiResponse(responseCode = "404", description = "데이터를 찾을 수 없습니다.", content = @Content)
     })
     @GetMapping("/search")

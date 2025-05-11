@@ -63,6 +63,7 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공",
                     content = @Content(schema = @Schema(implementation = UserDTO.class))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다.", content = @Content),
             @ApiResponse(responseCode = "404", description = "회원 정보를 찾을 수 없습니다.", content = @Content)
     })
     @GetMapping("/me")
@@ -76,6 +77,7 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "수정 성공",
                     content = @Content(schema = @Schema(implementation = UserDTO.class))),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다.", content = @Content),
             @ApiResponse(responseCode = "404", description = "회원 정보를 찾을 수 없습니다.", content = @Content)
     })
     @PutMapping("/me")
@@ -89,6 +91,7 @@ public class UserController {
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "삭제 성공", content = @Content),
+            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다.", content = @Content),
             @ApiResponse(responseCode = "404", description = "회원 정보를 찾을 수 없습니다.", content = @Content)
     })
     @DeleteMapping("/me")
