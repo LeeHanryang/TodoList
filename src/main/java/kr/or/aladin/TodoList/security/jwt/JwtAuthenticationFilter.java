@@ -5,22 +5,37 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private final JwtUtill jwtUtill;    // 주입 필요
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        // OAuth2 인가 요청 또는 콜백은 JWT 검사하지 않음
+        return path.startsWith("/oauth2/authorize")
+                || path.startsWith("/oauth2/redirect")
+                || path.startsWith("/login/oauth2");
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
-        // JWT 토큰 검증 로직 추가
         String token = request.getHeader("Authorization");
         if (token != null && token.startsWith("Bearer ")) {
-            // 토큰 검증 후 SecurityContext 설정 (추가 구현 필요)
+            token = token.substring(7);  // "Bearer " 제거
+            if (jwtUtill.validate(token)) {
+                SecurityContextHolder.getContext()
+                        .setAuthentication(jwtUtill.toAuthentication(token));
+            }
         }
-
         chain.doFilter(request, response);
     }
 }

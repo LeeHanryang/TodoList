@@ -26,9 +26,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest req) {
         OAuth2User oauth2User = super.loadUser(req);
-        String provider = req.getClientRegistration().getRegistrationId();
         Map<String, Object> attr = oauth2User.getAttributes();
 
+        String provider = req.getClientRegistration().getRegistrationId();
         String providerId = oAuth2Util.extractProviderId(provider, attr);
         String email = oAuth2Util.extractEmail(provider, attr);
         String username = oAuth2Util.extractUserName(provider);

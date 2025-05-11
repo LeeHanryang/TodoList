@@ -19,7 +19,7 @@ public class TodoDTO {
     @NotBlank
     @Size(max = 100)
     private final String title;
-    private final String content;
+    private final String description;
     private final boolean completed;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
@@ -29,14 +29,16 @@ public class TodoDTO {
         return TodoDTO.builder()
                 .id(entity.getId())
                 .title(entity.getTitle())
-                .content(entity.getContent())
+                .description(entity.getDescription())
                 .completed(entity.isCompleted())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
                 .build();
     }
 
     /* 필요 시 DTO → Entity 변환용 */
     public Todo toEntity(User user) {
-        return Todo.create(user, title, content, completed);
+        return Todo.create(user, title, description, completed);
 
     }
 }

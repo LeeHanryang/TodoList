@@ -1,6 +1,9 @@
 package kr.or.aladin.TodoList.exception;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.ConstraintViolationException;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,39 +17,47 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     /**
-     * 사용자 정의 예외 → 상태 코드만 반환 (바디 없음)
+     * 사용자 정의 예외
      */
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<Void> handleApiException(ApiException ex) {
+    public ResponseEntity<ErrorResponse> handleApiException(ApiException ex) {
         log.warn("Handled ApiException: {}", ex.getErrorMessage());
         return ResponseEntity
                 .status(ex.getStatus())
-                .build();
+                .body(new ErrorResponse(ex.getErrorMessage(), ex.getData()));
     }
 
     /**
-     * 입력 검증 오류 → 400 Bad Request
+     * 입력 검증 오류
      */
     @ExceptionHandler({
             MethodArgumentNotValidException.class,
             ConstraintViolationException.class,
             HttpMessageNotReadableException.class
     })
-    public ResponseEntity<Void> handleValidation(Exception ex) {
+    public ResponseEntity<ErrorResponse> handleValidation(Exception ex) {
         log.warn("Validation error: {}", ex.getMessage());
         return ResponseEntity
                 .badRequest()
-                .build();
+                .body(new ErrorResponse(ex.getMessage(), null));
     }
 
     /**
-     * 그 외 모든 예외 → 500 Internal Server Error
+     * 그 외 모든 예외
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Void> handleAll(Exception ex) {
+    public ResponseEntity<ErrorResponse> handleAll(Exception ex) {
         log.error("Unhandled exception", ex);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .build();
+                .body(new ErrorResponse("서버 내부 오류가 발생했습니다", null));
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)  // null 값은 제외
+    private static class ErrorResponse {
+        private String message;
+        private Object data;
     }
 }

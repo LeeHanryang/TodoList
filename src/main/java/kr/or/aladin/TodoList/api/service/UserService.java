@@ -17,15 +17,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
-    UserRepository userRepository;
-    SocialAccountRepository socialAccountRepository;
-    PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final SocialAccountRepository socialAccountRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public UserDTO register(SignUpDTO dto) {
@@ -110,20 +111,27 @@ public class UserService {
     public UserDTO processOAuth2User(String username, String email, String encodedPassword,
                                      String provider, String providerId) {
         OAuth2Enum providerEnum = OAuth2Enum.from(provider);
-        // 기존 소셜 계정이 있는지 확인
-        return socialAccountRepository.findByProviderAndProviderId(providerEnum, providerId)
-                .map(sa -> UserDTO.from(sa.getUser()))  // 있으면 기존 사용자 반환
+        // 같은 소셜 계정이 등록되어 있는지 확인
+        Optional<SocialAccount> existingSA =
+                socialAccountRepository.findByProviderAndProviderId(providerEnum, providerId);
+        if (existingSA.isPresent()) {
+            return UserDTO.from(existingSA.get().getUser());
+        }
+
+        // 같은 이메일로 가입된 사용자가 있는지 확인
+        User user = userRepository.findByEmail(email)
                 .orElseGet(() -> {
-                    // 없으면 새로 생성
+                    // 3) 신규 회원 생성
                     User newUser = User.create(username, encodedPassword, email);
                     newUser.addRole(RoleEnum.USER.getRole());
-
-                    userRepository.save(newUser);
-
-                    // 소셜 계정 정보 저장
-                    socialAccountRepository.save(SocialAccount.of(newUser, providerEnum, providerId));
-
-                    return UserDTO.from(newUser);
+                    return userRepository.save(newUser);
                 });
+
+        // SocialAccount 등록
+        socialAccountRepository.save(
+                SocialAccount.of(user, providerEnum, providerId)
+        );
+
+        return UserDTO.from(user);
     }
 }

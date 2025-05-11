@@ -46,7 +46,7 @@ public class TodoService {
         Todo todo = todoRepository.findById(id)
                 .orElseThrow(() -> new ApiException(ErrorCodeEnum.TODO_DETAIL_NOT_FOUND));
 
-        todo.update(dto.getTitle(), dto.getContent(), dto.isCompleted());
+        todo.update(dto.getTitle(), dto.getDescription(), dto.isCompleted());
         return todoRepository.save(todo).toDto();
     }
 

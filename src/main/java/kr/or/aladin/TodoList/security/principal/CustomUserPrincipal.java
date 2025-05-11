@@ -18,7 +18,7 @@ public record CustomUserPrincipal(UUID id,
     public static CustomUserPrincipal from(User user) {
         return new CustomUserPrincipal(
                 user.getId(),
-                user.getUsername(),  // username 추가!
+                user.getUsername(),
                 user.getPassword(),
                 user.getRoles()
         );

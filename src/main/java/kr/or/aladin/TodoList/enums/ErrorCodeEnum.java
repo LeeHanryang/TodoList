@@ -28,17 +28,22 @@ public enum ErrorCodeEnum {
      */
     INVALID_PASSWORD_FORMAT(HttpStatus.BAD_REQUEST, "비밀번호 형식이 올바르지 않습니다."),
     /**
-     * 로그인 실패 (아이디·비밀번호 불일치)
+     * 로그인 실패 (이메일·비밀번호 불일치)
      */
-    LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 올바르지 않습니다."),
+    LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."),
     /**
      * 인증 토큰이 없거나 잘못됨
      */
+    MISSING_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
     /**
      * 토큰 만료
      */
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "로그인 세션이 만료되었습니다. 다시 로그인해 주세요."),
+    /**
+     * 권한 부족
+     */
+    ROLES_NOT_MATCH(HttpStatus.FORBIDDEN, "권한이 없습니다."),
     /**
      * 존재하지 않는 회원
      */

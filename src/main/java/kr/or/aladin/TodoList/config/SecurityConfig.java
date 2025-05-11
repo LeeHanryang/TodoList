@@ -1,8 +1,12 @@
 package kr.or.aladin.TodoList.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import kr.or.aladin.TodoList.api.repository.UserRepository;
 import kr.or.aladin.TodoList.api.service.CustomOAuth2UserService;
+import kr.or.aladin.TodoList.exception.RestAccessDeniedHandler;
+import kr.or.aladin.TodoList.exception.RestAuthenticationEntryPoint;
 import kr.or.aladin.TodoList.security.jwt.JwtAuthenticationFilter;
+import kr.or.aladin.TodoList.security.jwt.JwtUtill;
 import kr.or.aladin.TodoList.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import kr.or.aladin.TodoList.security.principal.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -27,13 +32,32 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final UserRepository userRepository; // JPA
+    private final UserRepository userRepository;
+    private final JwtUtill jwtUtill;
+    private final RestAuthenticationEntryPoint authenticationEntryPoint;
+    private final RestAccessDeniedHandler accessDeniedHandler;
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtUtill);
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, CustomOAuth2UserService oAuth2UserService, OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .logout(logout -> logout
+                        .logoutUrl("/logout").logoutSuccessHandler((req, res, auth) -> {
+                            res.setStatus(HttpServletResponse.SC_OK);
+                        })
+                        .permitAll())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler)
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/**",
@@ -41,19 +65,22 @@ public class SecurityConfig {
                                 "/users/login",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/oauth2/**",                    // OAuth2 관련 엔드포인트 추가
-                                "/login/oauth2/**"               // OAuth2 콜백 URL 추가
+                                "/oauth2/**",
+                                "/login/oauth2/**"
 
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-
         http
-                .oauth2Login(oauth -> oauth
-                        .userInfoEndpoint(u -> u.userService(oAuth2UserService))
-                        .successHandler(oAuth2AuthenticationSuccessHandler)
-                );
+                .oauth2Login(o -> {
+                    o.authorizationEndpoint(a -> a.baseUri("/oauth2/authorize"));
+                    o.redirectionEndpoint(r -> r.baseUri("/oauth2/redirect/*"));
+                    o.userInfoEndpoint(u -> u.userService(oAuth2UserService));
+                    o.successHandler(oAuth2AuthenticationSuccessHandler);
+                })
+                .addFilterAfter(jwtAuthenticationFilter(), OAuth2LoginAuthenticationFilter.class);
+
 
         return http.build();
     }
@@ -61,19 +88,15 @@ public class SecurityConfig {
     /* === Spring Security 6: UserDetailsService 필요 === */
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> userRepository.findByUsername(username)
-                .map(CustomUserPrincipal::from)  // or user -> user
-                .orElseThrow(() -> new UsernameNotFoundException(username));
+        return email -> userRepository.findByEmail(email)
+                .map(CustomUserPrincipal::from)  // 메서드 참조 대신 람다식 사용
+                .orElseThrow(() -> new UsernameNotFoundException(email));
     }
+
 
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter();  // ✅ 필터 객체 생성 및 반환
     }
 
     @Bean

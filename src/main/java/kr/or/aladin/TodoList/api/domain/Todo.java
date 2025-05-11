@@ -30,17 +30,17 @@ public class Todo {
     private String title;
 
     @Column(columnDefinition = "TEXT")
-    private String content;
+    private String description;
 
     @Column(nullable = false)
     private boolean completed;
 
     @CreatedDate
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(nullable = false)
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -56,14 +56,14 @@ public class Todo {
         Todo todo = new Todo();
         todo.user = author;      // 연관관계 주입
         todo.title = title;
-        todo.content = content;
+        todo.description = content;
         todo.completed = completed;
         return todo;
     }
 
     public void update(String title, String content, boolean completed) {
         this.title = title;
-        this.content = content;
+        this.description = content;
         this.completed = completed;
     }
 

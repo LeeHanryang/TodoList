@@ -77,6 +77,7 @@ public class JwtUtill {
     /* ───────── Security Authentication 변환 ───────── */
 
     public Authentication toAuthentication(String token) {
+
         Claims c = parse(token);
 
         CustomUserPrincipal principal = new CustomUserPrincipal(
