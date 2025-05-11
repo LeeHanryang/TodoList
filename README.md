@@ -1,50 +1,78 @@
-# TodoList API
+# TodoList 서비스
 
-간단한 할 일(Todo) 관리 REST API입니다.  
-**Spring Boot 3.2.3 · Spring Security(JWT) · Spring Data JPA · springdoc-openapi** 등을 사용했습니다.
+## 개요
 
----
+Spring Boot 기반의 TodoList RESTful API 프로젝트입니다. 로그인 방식으로 JWT 인증과 OAuth2(구글, 네이버 등)를 지원하며, SQLite3를 데이터베이스로 사용합니다.
 
-## 실행 방법
+* Spring Boot 버전: 3.2.3
+* 빌드 도구: Gradle
+* Java 버전: 17
+* 데이터베이스: SQLite3 (JPA 사용)
+* 인증: Spring Security (JWT) 및 OAuth2.0
+* DB 모드: `create-drop` (애플리케이션 실행 시 DB 생성, 종료 시 DB 삭제)
 
-### 요구 사항
+## 주요 기능
 
-- **Java 17** 이상
-- Git
-- (선택) Docker & Docker Compose – 로컬 DB 컨테이너 사용 시
+1. **회원 가입 / 로그인**
 
-### 1) 애플리케이션 구동
+   * 이메일/비밀번호 기반
+   * JWT 토큰 발급 및 검증
+2. **OAuth2 로그인**
 
-| 빌드 도구          | 실행 명령                    |
-|----------------|--------------------------|
-| **Gradle**(권장) | `./gradlew bootRun`      |
-| **Maven**      | `./mvnw spring-boot:run` |
+   * Google, Naver 등 OAuth2 제공자 연동
+   * 소셜 계정 최초 로그인 시 사용자 정보 저장
+3. **Todo 관리**
 
-> Windows라면 `./gradlew` → `gradlew.bat`, `./mvnw` → `mvnw.cmd` 로 변경해 실행하세요.
+   * CRUD(Create, Read, Update, Delete)
+   * JWT 인증 필요
 
-실행형 JAR 빌드:
+## 기술 스택
 
-### 2) 환경 변수(선택)
+| Layer  | 기술                           |
+| ------ | ---------------------------- |
+| API 서버 | Spring Boot 3.2.3            |
+| 언어     | Java 17                      |
+| 빌드 도구  | Gradle                       |
+| 데이터 접근 | Spring Data JPA              |
+| DB     | SQLite3 (`create-drop` 모드)   |
+| 보안     | Spring Security, JWT, OAuth2 |
+| 문서화    | Swagger UI                   |
 
-JWT 시크릿 키나 DB 접속 정보를 외부에 두고 싶다면 예시처럼 지정합니다.
+## 요구사항
 
-값을 주지 않으면 **내장 H2 인메모리 DB** 로 실행됩니다.
+* Java 17 이상
+* Gradle
+* Internet 연결 (OAuth2 인증용)
 
----
+## 설치 및 실행
 
-## 데이터베이스 모드
+1. 레포지토리 클론
 
-현재 설정은 **`create-drop`** 입니다.  
-애플리케이션이 시작될 때 스키마가 자동 생성되고 종료 시 삭제됩니다.  
-영속적인 데이터가 필요하면 `spring.jpa.hibernate.ddl-auto` 값을 `update` 또는 `none` 으로 바꿔주세요.
+   ```bash
+   git clone <레포지토리 URL>
+   cd <프로젝트 디렉토리>
+   ```
+2. 의존성 다운로드 및 빌드
 
----
+   ```bash
+   ./gradlew build
+   ```
+3. 애플리케이션 실행
+
+   ```bash
+   ./gradlew bootRun
+   ```
+4. 실행 후 자동으로 SQLite3 인메모리 DB가 생성되며, 종료 시 삭제됩니다.
 
 ## API 명세
 
-| 구분           | URL                                           |
-|--------------|-----------------------------------------------|
-| Swagger UI   | `http://localhost:8080/swagger-ui/index.html` |
-| OpenAPI JSON | `http://localhost:8080/v3/api-docs`           |
+Swagger UI를 통해 상세 API 문서를 확인할 수 있습니다:
 
-Swagger UI에서 모든 엔드포인트와 요청·응답 스키마를 확인하고 **Try it out** 버튼으로 바로 호출해 보세요.
+> [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+
+또는 `/v3/api-docs` 엔드포인트로 JSON 문서를 조회 가능합니다.
+
+## 추가 설정
+
+* `application.properties`에서 OAuth2 클라이언트 ID, 시크릿 등을 설정해주세요.
+* JWT 비밀 키, 토큰 만료 시간 등도 설정 가능합니다.
