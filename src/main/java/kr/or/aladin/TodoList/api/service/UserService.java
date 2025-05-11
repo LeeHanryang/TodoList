@@ -90,23 +90,7 @@ public class UserService {
 
         userRepository.delete(user);
     }
-
-
-    public UserDTO registerSocialIfAbsent(String username, String email) {
-        return userRepository.findByUsername(username)
-                .map(User::toDto)
-                .orElseGet(() -> {
-                    // 랜덤 비밀번호 생성 후 인코딩 (외부 로그에 노출되지 않음)
-                    String randomPassword = UUID.randomUUID().toString();
-                    String encoded = passwordEncoder.encode(randomPassword);
-
-                    User user = User.create(username, encoded, email);
-                    user.addRole(RoleEnum.USER.getRole());
-
-                    return userRepository.save(user).toDto();
-                });
-    }
-
+    
     @Transactional
     public UserDTO processOAuth2User(String username, String email, String encodedPassword,
                                      String provider, String providerId) {

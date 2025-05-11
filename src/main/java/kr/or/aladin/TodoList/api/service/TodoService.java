@@ -22,8 +22,8 @@ public class TodoService {
     private final UserRepository userRepository;
 
     @Transactional
-    public TodoDTO create(String username, TodoDTO dto) {
-        User user = userRepository.findByUsername(username)
+    public TodoDTO create(UUID id, TodoDTO dto) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ApiException(ErrorCodeEnum.USER_NOT_FOUND));
 
         Todo todo = dto.toEntity(user);

@@ -27,7 +27,7 @@ public class TodoController {
             @AuthenticationPrincipal CustomUserPrincipal principal,
             @Valid @RequestBody TodoDTO dto
     ) {
-        TodoDTO saved = todoService.create(principal.username(), dto);
+        TodoDTO saved = todoService.create(principal.id(), dto);
         return ResponseEntity                     // 201 Created + Location 헤더
                 .created(URI.create("/todos/" + saved.getId()))
                 .build();

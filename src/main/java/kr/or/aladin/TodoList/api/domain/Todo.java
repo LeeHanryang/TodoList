@@ -3,6 +3,8 @@ package kr.or.aladin.TodoList.api.domain;
 import jakarta.persistence.*;
 import kr.or.aladin.TodoList.api.dto.TodoDTO;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -45,6 +47,7 @@ public class Todo {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     /* 상태 변경 편의 메서드 */
