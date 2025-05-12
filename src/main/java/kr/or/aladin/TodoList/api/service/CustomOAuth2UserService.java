@@ -1,6 +1,5 @@
 package kr.or.aladin.TodoList.api.service;
 
-import kr.or.aladin.TodoList.api.dto.UserDTO;
 import kr.or.aladin.TodoList.enums.RoleEnum;
 import kr.or.aladin.TodoList.security.oauth2.OAuth2Util;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +33,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String username = oAuth2Util.extractUserName(provider);
 
         // 사용자 생성 또는 조회
-        UserDTO user = userService.processOAuth2User(
+        userService.processOAuth2User(
                 username,
                 email,
                 passwordEncoder.encode(UUID.randomUUID().toString()),
