@@ -35,8 +35,3 @@ out/
 
 ### VS Code ###
 .vscode/
-
-# application properties
-
-# SQLite DB
-todo.sqlite
