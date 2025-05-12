@@ -1,4 +1,26 @@
-#TodoList 서비스
+# TodoList 서비스
+
+---
+
+## ✅ 웹 UI 및 API 문서
+
+* 🌐 **웹 UI**: [http://34.44.10.121](http://34.44.10.121)
+* 📘 **Swagger 문서**: [http://34.44.10.121:8080/swagger-ui/index.html](http://34.44.10.121:8080/swagger-ui/index.html)
+
+---
+
+## 🔐 개발용 OAuth2.0 인증 안내
+
+| 플랫폼        | 지원 여부 | 설명                                              |
+|------------|-------|-------------------------------------------------|
+| 🟢 **카카오** | 정상 작동 | 클라이언트 등록 후 즉시 사용 가능                             |
+| 🔴 **구글**  | 제한됨   | 공개 서버에서 사용하려면 **최상위 도메인 필요** (예: `example.com`) |
+| 🟡 **네이버** | 설정 필요 | **네이버 개발자센터에 테스트 할 ID 등록 필요**                   |
+
+> 로컬 환경에서는 모든 OAuth2 로그인이 정상 작동하지만
+> 공개 URL에서는 **카카오 사용을 권장**합니다.
+
+---
 
 ## 개요
 
@@ -11,11 +33,6 @@ Spring Boot 기반의 TodoList RESTful API 프로젝트입니다. 로그인 방�
 * **인증 방식**: Spring Security (JWT) 및 OAuth2.0
 * **DB 모드**: `create-drop` (애플리케이션 실행 시 DB 생성, 종료 시 삭제)
 
-## API 문서 및 UI
-
-* ✅ **웹 UI**: [http://34.44.10.121](http://34.44.10.121)
-* ✅ **Swagger 문서**: [http://34.44.10.121:8080/swagger-ui/index.html](http://34.44.10.121:8080/swagger-ui/index.html)
-
 ## 주요 기능
 
 1. **회원 가입 / 로그인**
@@ -27,7 +44,6 @@ Spring Boot 기반의 TodoList RESTful API 프로젝트입니다. 로그인 방�
 
     * Google, Naver, Kakao OAuth2 제공자 연동
     * 소셜 계정 최초 로그인 시 사용자 정보 저장
-    * ⚠️ **주의**: 구글 OAuth2는 공개 URL일 경우 최상의 도메인이 필요하여 **로컬환경에서는 정상 작동하지만 클라우드에선 인증이 제한됩니다.**
 
 3. **Todo 관리**
 
@@ -55,7 +71,7 @@ Spring Boot 기반의 TodoList RESTful API 프로젝트입니다. 로그인 방�
 
 * Java 17 이상
 * Gradle
-* Internet 연결 (OAuth2 인증 필요 시)
+* Internet 연결 (OAuth2 인증)
 
 ## 설치 및 실행
 
