@@ -1,7 +1,3 @@
----
-**File:** `TodoController.java`
----
-
 ```gradle
 plugins {
 id 'org.springframework.boot' version '3.4.5'
