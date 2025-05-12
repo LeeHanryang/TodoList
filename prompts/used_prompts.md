@@ -2,8 +2,6 @@
 **File:** `build.gradle`
 ---
 
--
-
 ```gradle
 plugins {
 id 'org.springframework.boot' version '3.4.5'
