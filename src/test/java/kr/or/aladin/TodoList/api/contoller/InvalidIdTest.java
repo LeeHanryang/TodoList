@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -56,6 +57,7 @@ class InvalidIdTest extends IntegrationTestSupport {
     }
 
     @Test
+    @Transactional
     @DisplayName("잘못된 Todo ID 요청 시 404 반환")
     void wrongTodoId() throws Exception {
         mockMvc.perform(get("/todos/{id}", UUID.randomUUID())

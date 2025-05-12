@@ -5,7 +5,7 @@ import kr.or.aladin.TodoList.api.dto.LoginDTO;
 import kr.or.aladin.TodoList.api.repository.UserRepository;
 import kr.or.aladin.TodoList.enums.ErrorCodeEnum;
 import kr.or.aladin.TodoList.exception.ApiException;
-import kr.or.aladin.TodoList.security.jwt.JwtUtill;
+import kr.or.aladin.TodoList.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,7 +21,7 @@ public class LoginService {
 
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
-    private final JwtUtill jwtProvider;
+    private final JwtUtil jwtProvider;
 
     public String authenticate(LoginDTO dto) {
         User user = userRepository.findByEmail(dto.getEmail())

@@ -6,7 +6,7 @@ import kr.or.aladin.TodoList.api.service.CustomOAuth2UserService;
 import kr.or.aladin.TodoList.exception.RestAccessDeniedHandler;
 import kr.or.aladin.TodoList.exception.RestAuthenticationEntryPoint;
 import kr.or.aladin.TodoList.security.jwt.JwtAuthenticationFilter;
-import kr.or.aladin.TodoList.security.jwt.JwtUtill;
+import kr.or.aladin.TodoList.security.jwt.JwtUtil;
 import kr.or.aladin.TodoList.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import kr.or.aladin.TodoList.security.principal.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
@@ -32,13 +32,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final UserRepository userRepository;
-    private final JwtUtill jwtUtill;
+    private final JwtUtil jwtUtil;
     private final RestAuthenticationEntryPoint authenticationEntryPoint;
     private final RestAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtUtill);
+        return new JwtAuthenticationFilter(jwtUtil);
     }
 
     @Bean

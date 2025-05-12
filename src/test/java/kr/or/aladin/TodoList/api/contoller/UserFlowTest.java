@@ -8,8 +8,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -22,26 +21,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class UserFlowTest extends IntegrationTestSupport {
 
-    private String jwt;          // Bearer 토큰
-    private UUID userId;         // 생성된 User 식별자
+    private static final String TEST_USER = "testUser";
+    private static final String TEST_PASSWORD = "password";
+    private static final String TEST_EMAIL = "tester@test.com";
 
+    private String jwt;          // Bearer 토큰
     @Autowired
     private MockMvc mvc;
 
     @Autowired
     private ObjectMapper om;
 
-    @BeforeAll
+    @BeforeEach
     @DisplayName("통합 시나리오 실행을 위한 회원 가입 & 로그인")
+    @Transactional
     void setUp() throws Exception {
-        String testUser = "testUser";
-        String testPassword = "password";
-        String testEmail = "tester@test.com";
 
         SignUpDTO signUp = SignUpDTO.builder()
-                .email(testEmail)
-                .username(testUser)
-                .password(testPassword)
+                .email(TEST_EMAIL)
+                .username(TEST_USER)
+                .password(TEST_PASSWORD)
                 .build();
 
         mvc.perform(post("/users/signup")
@@ -49,7 +48,7 @@ class UserFlowTest extends IntegrationTestSupport {
                         .content(om.writeValueAsString(signUp)))
                 .andExpect(status().isCreated());
 
-        LoginDTO login = new LoginDTO(null, null, testEmail, testPassword, null);
+        LoginDTO login = new LoginDTO(null, null, TEST_EMAIL, TEST_PASSWORD, null);
 
         String body = mvc.perform(post("/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -63,17 +62,19 @@ class UserFlowTest extends IntegrationTestSupport {
 
     @Test
     @Order(1)
+    @Transactional
     @DisplayName("계정 조회")
     void getProfile() throws Exception {
         mvc.perform(get("/users/me")
                         .header("Authorization", jwt))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("testUser"))
-                .andExpect(jsonPath("$.email").value("tester@test.com"));
+                .andExpect(jsonPath("$.username").value(TEST_USER))
+                .andExpect(jsonPath("$.email").value(TEST_EMAIL));
     }
 
     @Test
     @Order(2)
+    @Transactional
     @DisplayName("계정 수정")
     void updateProfile() throws Exception {
         SignUpDTO update = SignUpDTO.builder()
@@ -92,6 +93,7 @@ class UserFlowTest extends IntegrationTestSupport {
 
     @Test
     @Order(3)
+    @Transactional
     @DisplayName("회원 탈퇴")
     void deleteAccount() throws Exception {
         /* 탈퇴 */

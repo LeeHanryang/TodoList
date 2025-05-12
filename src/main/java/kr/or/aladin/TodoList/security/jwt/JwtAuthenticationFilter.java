@@ -23,7 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     );
 
-    private final JwtUtill jwtUtill;    // 주입 필요
+    private final JwtUtil jwtUtil;    // 주입 필요
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -40,9 +40,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);  // "Bearer " 제거
-            if (jwtUtill.validate(token)) {
+            if (jwtUtil.validate(token)) {
                 SecurityContextHolder.getContext()
-                        .setAuthentication(jwtUtill.toAuthentication(token));
+                        .setAuthentication(jwtUtil.toAuthentication(token));
             }
         }
         chain.doFilter(request, response);

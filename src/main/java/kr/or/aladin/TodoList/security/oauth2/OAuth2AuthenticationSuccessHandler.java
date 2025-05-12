@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.or.aladin.TodoList.api.dto.UserDTO;
 import kr.or.aladin.TodoList.api.service.UserService;
-import kr.or.aladin.TodoList.security.jwt.JwtUtill;
+import kr.or.aladin.TodoList.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -22,7 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final JwtUtill jwtUtill;
+    private final JwtUtil jwtUtil;
     private final UserService userService;
     private final OAuth2Util oAuth2Util;
     private final PasswordEncoder passwordEncoder;
@@ -56,7 +56,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         );
 
         // JWT 토큰 생성
-        String token = jwtUtill.generateToken(
+        String token = jwtUtil.generateToken(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
@@ -67,7 +67,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String targetUrl = UriComponentsBuilder.fromHttpUrl(frontendUrl)
                 .path("/login/oauth2/code/{provider}")
                 .queryParam("token", token)
-                .build().toUriString();
+                .buildAndExpand(provider)
+                .toUriString();
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }

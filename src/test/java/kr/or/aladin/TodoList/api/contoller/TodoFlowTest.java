@@ -1,14 +1,13 @@
 package kr.or.aladin.TodoList.api.contoller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.or.aladin.TodoList.api.dto.LoginDTO;
 import kr.or.aladin.TodoList.api.dto.SignUpDTO;
 import kr.or.aladin.TodoList.api.dto.TodoDTO;
 import kr.or.aladin.TodoList.surpport.IntegrationTestSupport;
-import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,70 +17,57 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Todo 생성 → 목록 → 수정 → 삭제 통합 흐름
- */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class TodoFlowTest extends IntegrationTestSupport {
 
-    private String jwt;          // Bearer 토큰
-    private UUID todoId;         // 생성된 Todo 식별자
+    private String jwt;
+    private UUID todoId;
+    private String username;
+    private String email;
 
-    @Autowired
-    private MockMvc mvc;
-
-    @Autowired
-    private ObjectMapper om;
-
-    @BeforeAll
-    @DisplayName("Todo 생성 전 로그인 세팅")
+    @BeforeEach
     void setUp() throws Exception {
-        String testUser = "testUser";
-        String testPassword = "password";
-        String testEmail = "tester@test.com";
+        // 1) 매번 유니크한 사용자 생성
+        String rand = UUID.randomUUID().toString().substring(0, 8);
+        username = "testUser" + rand;
+        email = "tester+" + rand + "@test.com";
 
         SignUpDTO signUp = SignUpDTO.builder()
-                .email(testEmail)
-                .username(testUser)
-                .password(testPassword)
+                .username(username)
+                .email(email)
+                .password("password")
                 .build();
-
-        mvc.perform(post("/users/signup")
+        mockMvc.perform(post("/users/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(signUp)))
+                        .content(objectMapper.writeValueAsString(signUp)))
                 .andExpect(status().isCreated());
 
-        LoginDTO login = new LoginDTO(null, null, testEmail, testPassword, null);
-
-        String body = mvc.perform(post("/users/login")
+        // 2) 로그인하여 JWT 획득
+        LoginDTO login = new LoginDTO(null, null, email, "password", null);
+        String body = mockMvc.perform(post("/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(login)))
+                        .content(objectMapper.writeValueAsString(login)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-
-        String rawToken = om.readTree(body).get("access_token").asText();
+        String rawToken = objectMapper.readTree(body).get("access_token").asText();
         jwt = "Bearer " + rawToken;
 
-        TodoDTO req = TodoDTO.builder()
+        // 3) 기본 Todo 생성
+        TodoDTO defaultTodo = TodoDTO.builder()
                 .title("기본 Todo")
                 .description("기본값")
                 .completed(false)
                 .build();
-
-        String location = mvc.perform(post("/todos")
+        String location = mockMvc.perform(post("/todos")
                         .header("Authorization", jwt)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(req)))
+                        .content(objectMapper.writeValueAsString(defaultTodo)))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getHeader("Location");
-
         assertThat(location).isNotBlank();
         todoId = UUID.fromString(location.substring(location.lastIndexOf('/') + 1));
     }
 
     @Test
-    @Order(1)
     @DisplayName("Todo 생성")
     void createTodo() throws Exception {
         TodoDTO req = TodoDTO.builder()
@@ -89,41 +75,37 @@ class TodoFlowTest extends IntegrationTestSupport {
                 .description("MockMvc로 통합 테스트 작성")
                 .completed(false)
                 .build();
-
-        String location = mvc.perform(post("/todos")
+        String location = mockMvc.perform(post("/todos")
                         .header("Authorization", jwt)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(req)))
+                        .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getHeader("Location");
-
         assertThat(location).isNotBlank();
 
         UUID createdId = UUID.fromString(location.substring(location.lastIndexOf('/') + 1));
-
-        mvc.perform(get("/todos/{id}", createdId)
+        mockMvc.perform(get("/todos/{id}", createdId)
                         .header("Authorization", jwt))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("JUnit 공부"));
     }
 
     @Test
-    @Order(2)
     @DisplayName("Todo 목록 조회")
     void listTodos() throws Exception {
-        String body = mvc.perform(get("/todos")
+        String body = mockMvc.perform(get("/todos")
                         .header("Authorization", jwt))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        List<?> list = om.readValue(body, List.class);
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        List<?> list = objectMapper.readValue(body, List.class);
         assertThat(list).isNotEmpty();
     }
 
     @Test
-    @Order(3)
     @DisplayName("Todo 수정")
     void updateTodo() throws Exception {
         TodoDTO updateReq = TodoDTO.builder()
@@ -132,34 +114,31 @@ class TodoFlowTest extends IntegrationTestSupport {
                 .description("MockMvc 흐름 테스트")
                 .completed(true)
                 .build();
-
-        mvc.perform(put("/todos/{id}", todoId)
+        mockMvc.perform(put("/todos/{id}", todoId)
                         .header("Authorization", jwt)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(updateReq)))
+                        .content(objectMapper.writeValueAsString(updateReq)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("JUnit 통합 테스트"))
                 .andExpect(jsonPath("$.completed").value(true));
     }
 
     @Test
-    @Order(4)
     @DisplayName("Todo 삭제")
     void deleteTodo() throws Exception {
-        mvc.perform(delete("/todos/{id}", todoId)
+        mockMvc.perform(delete("/todos/{id}", todoId)
                         .header("Authorization", jwt))
                 .andExpect(status().isNoContent());
 
-        mvc.perform(get("/todos/{id}", todoId)
+        mockMvc.perform(get("/todos/{id}", todoId)
                         .header("Authorization", jwt))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @Order(5)
     @DisplayName("Todo 검색")
     void searchTodos() throws Exception {
-        mvc.perform(get("/todos/search")
+        mockMvc.perform(get("/todos/search")
                         .param("keyword", "기본")
                         .header("Authorization", jwt))
                 .andExpect(status().isOk())
