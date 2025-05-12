@@ -48,6 +48,10 @@ public enum ErrorCodeEnum {
      * 존재하지 않는 회원
      */
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원 정보를 찾을 수 없습니다."),
+    /**
+     * 지원되지 않는 OAuth2
+     */
+    UNSUPPORTED_PROVIDER(HttpStatus.NOT_FOUND, "지원되지 않는 OAuth2 입니다."),
 
     /* ───────── TODO : 4xx ───────── */
     /**

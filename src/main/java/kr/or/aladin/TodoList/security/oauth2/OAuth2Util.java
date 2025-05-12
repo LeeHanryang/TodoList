@@ -1,5 +1,7 @@
 package kr.or.aladin.TodoList.security.oauth2;
 
+import kr.or.aladin.TodoList.enums.ErrorCodeEnum;
+import kr.or.aladin.TodoList.exception.ApiException;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -21,7 +23,7 @@ public class OAuth2Util {
             case "google" -> (String) attr.get("email");
             case "kakao" -> (String) ((Map<?, ?>) attr.get("kakao_account")).get("email");
             case "naver" -> (String) ((Map<?, ?>) attr.get("response")).get("email");
-            default -> throw new IllegalArgumentException("Unsupported provider: " + provider);
+            default -> throw new ApiException(ErrorCodeEnum.UNSUPPORTED_PROVIDER);
         };
     }
 
@@ -30,7 +32,7 @@ public class OAuth2Util {
             case "google" -> (String) attributes.get("sub");
             case "kakao" -> String.valueOf(attributes.get("id"));
             case "naver" -> (String) ((Map<?, ?>) attributes.get("response")).get("id");
-            default -> throw new IllegalArgumentException("Unsupported provider: " + provider);
+            default -> throw new ApiException(ErrorCodeEnum.UNSUPPORTED_PROVIDER);
         };
     }
 
@@ -39,7 +41,7 @@ public class OAuth2Util {
             case "google" -> "sub";
             case "kakao" -> "id";
             case "naver" -> "response";
-            default -> throw new IllegalArgumentException("Unsupported provider: " + provider);
+            default -> throw new ApiException(ErrorCodeEnum.UNSUPPORTED_PROVIDER);
         };
     }
 }

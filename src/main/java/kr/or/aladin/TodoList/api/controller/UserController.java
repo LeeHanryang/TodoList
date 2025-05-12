@@ -12,7 +12,7 @@ import jakarta.validation.Valid;
 import kr.or.aladin.TodoList.api.dto.LoginDTO;
 import kr.or.aladin.TodoList.api.dto.SignUpDTO;
 import kr.or.aladin.TodoList.api.dto.UserDTO;
-import kr.or.aladin.TodoList.api.service.AuthService;
+import kr.or.aladin.TodoList.api.service.LoginService;
 import kr.or.aladin.TodoList.api.service.UserService;
 import kr.or.aladin.TodoList.security.principal.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-    private final AuthService authService;
+    private final LoginService loginService;
 
     /* ───────── 인증 ───────── */
 
@@ -52,7 +52,7 @@ public class UserController {
     })
     @PostMapping("/login")
     public ResponseEntity<LoginDTO> login(@Valid @RequestBody LoginDTO dto) {
-        String token = authService.authenticate(dto);
+        String token = loginService.authenticate(dto);
         return ResponseEntity.ok(new LoginDTO(token));
     }
 
