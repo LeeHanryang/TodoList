@@ -22,9 +22,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final OAuth2Util oAuth2Util;
     private final PasswordEncoder passwordEncoder;
 
+    // 테스트를 위해 분리
+    protected OAuth2User delegateLoadUser(OAuth2UserRequest req) {
+        return super.loadUser(req);
+    }
+
     @Override
     public OAuth2User loadUser(OAuth2UserRequest req) {
-        OAuth2User oauth2User = super.loadUser(req);
+        OAuth2User oauth2User = delegateLoadUser(req);
         Map<String, Object> attr = oauth2User.getAttributes();
 
         String provider = req.getClientRegistration().getRegistrationId();
@@ -32,7 +37,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String email = oAuth2Util.extractEmail(provider, attr);
         String username = oAuth2Util.extractUserName(provider);
 
-        // 사용자 생성 또는 조회
         userService.processOAuth2User(
                 username,
                 email,
@@ -43,9 +47,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         return new DefaultOAuth2User(
                 Set.of(RoleEnum.USER::getRole),
-                oauth2User.getAttributes(),
+                attr,
                 oAuth2Util.getNameAttributeKey(provider)
         );
     }
-
 }

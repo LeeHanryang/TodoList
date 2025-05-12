@@ -1,3 +1,5 @@
+package kr.or.aladin.TodoList.config;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.boot.test.context.TestConfiguration;
