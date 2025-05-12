@@ -90,7 +90,7 @@ public class UserService {
 
         userRepository.delete(user);
     }
-    
+
     @Transactional
     public UserDTO processOAuth2User(String username, String email, String encodedPassword,
                                      String provider, String providerId) {
@@ -102,10 +102,10 @@ public class UserService {
             return UserDTO.from(existingSA.get().getUser());
         }
 
-        // 같은 이메일로 가입된 사용자가 있는지 확인
+        // 같은 이메일로 가입된 계정이 있는지 확인
         User user = userRepository.findByEmail(email)
                 .orElseGet(() -> {
-                    // 3) 신규 회원 생성
+                    // 신규 계정 생성
                     User newUser = User.create(username, encodedPassword, email);
                     newUser.addRole(RoleEnum.USER.getRole());
                     return userRepository.save(newUser);

@@ -84,7 +84,6 @@ public class SecurityConfig {
                 .orElseThrow(() -> new UsernameNotFoundException(email));
     }
 
-
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
