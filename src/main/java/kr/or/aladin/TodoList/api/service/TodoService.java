@@ -14,54 +14,61 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
-
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)   // 클래스 레벨로 기본을 read-only 로 설정
+@Transactional(readOnly = true)
 public class TodoService {
     private final TodoRepository todoRepository;
     private final UserRepository userRepository;
 
     @Transactional
-    public TodoDTO create(UUID id, TodoDTO dto) {
-        User user = userRepository.findById(id)
+    public TodoDTO create(UUID userId, TodoDTO dto) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(ErrorCodeEnum.USER_NOT_FOUND));
 
         Todo todo = dto.toEntity(user);
         return todoRepository.save(todo).toDto();
     }
 
-    public List<TodoDTO> findAll(UUID id) {
-        return todoRepository.findAllByUserIdOrderByCreatedAtDesc(id)
+    public List<TodoDTO> findAll(UUID userId) {
+        return todoRepository.findAllByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
                 .map(Todo::toDto)
                 .toList();
     }
 
-    public TodoDTO findById(UUID id) {
-        Todo todo = todoRepository.findById(id).orElseThrow(() -> new ApiException(ErrorCodeEnum.TODO_DETAIL_NOT_FOUND));
+    public TodoDTO findById(UUID userId, UUID todoId) {
+        Todo todo = todoRepository.findById(todoId)
+                .orElseThrow(() -> new ApiException(ErrorCodeEnum.TODO_DETAIL_NOT_FOUND));
+        if (!todo.getUser().getId().equals(userId)) {
+            throw new ApiException(ErrorCodeEnum.ACCESS_DENIED);
+        }
         return todo.toDto();
     }
 
     @Transactional
-    public TodoDTO update(UUID id, TodoDTO dto) {
-        Todo todo = todoRepository.findById(id)
+    public TodoDTO update(UUID userId, UUID todoId, TodoDTO dto) {
+        Todo todo = todoRepository.findById(todoId)
                 .orElseThrow(() -> new ApiException(ErrorCodeEnum.TODO_DETAIL_NOT_FOUND));
-
+        if (!todo.getUser().getId().equals(userId)) {
+            throw new ApiException(ErrorCodeEnum.ACCESS_DENIED);
+        }
         todo.update(dto.getTitle(), dto.getDescription(), dto.isCompleted());
         return todoRepository.save(todo).toDto();
     }
 
     @Transactional
-    public void delete(UUID id) {
-        Todo todo = todoRepository.findById(id)
+    public void delete(UUID userId, UUID todoId) {
+        Todo todo = todoRepository.findById(todoId)
                 .orElseThrow(() -> new ApiException(ErrorCodeEnum.TODO_DETAIL_NOT_FOUND));
-
+        if (!todo.getUser().getId().equals(userId)) {
+            throw new ApiException(ErrorCodeEnum.ACCESS_DENIED);
+        }
         todoRepository.delete(todo);
     }
 
-    public List<TodoDTO> search(UUID id, String keyword) {
-        return todoRepository.findByUserIdAndTitleContaining(id, keyword)
+    public List<TodoDTO> search(UUID userId, String keyword) {
+        return todoRepository.findByUserIdAndTitleContaining(userId, keyword)
                 .stream()
                 .map(Todo::toDto)
                 .toList();

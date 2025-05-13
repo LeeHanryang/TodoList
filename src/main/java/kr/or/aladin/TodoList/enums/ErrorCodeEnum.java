@@ -16,6 +16,10 @@ public enum ErrorCodeEnum {
 
     /* ───────── AUTH : 4xx ───────── */
     /**
+     * 접근 권한이 없습니다.
+     */
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+    /**
      * 이미 사용 중인 아이디
      */
     DUPLICATE_USERNAME(HttpStatus.CONFLICT, "이미 사용 중인 아이디입니다."),

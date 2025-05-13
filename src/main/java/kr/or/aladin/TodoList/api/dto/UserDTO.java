@@ -1,5 +1,7 @@
 package kr.or.aladin.TodoList.api.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import kr.or.aladin.TodoList.api.domain.User;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,8 +16,11 @@ import java.util.UUID;
 public class UserDTO {
 
     private final UUID id;
+    @NotBlank(message = "사용자 이름을 입력해주세요.")
     private final String username;
     private final String password;
+    @NotBlank(message = "email을 입력해주세요.")
+    @Email(message = "유효한 이메일 형식이어야 합니다.")
     private final String email;
     private final Set<String> roles;
     private final LocalDateTime createdAt;

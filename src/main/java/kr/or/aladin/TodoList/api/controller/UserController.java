@@ -36,19 +36,21 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "가입 성공",
                     content = @Content(schema = @Schema(implementation = UserDTO.class))),
-            @ApiResponse(responseCode = "409", description = "이미 사용 중인 아이디 또는 이메일입니다.", content = @Content)
+            @ApiResponse(responseCode = "400", description = "유효성 실패", content = @Content),
+            @ApiResponse(responseCode = "409", description = "ID/이메일 중복", content = @Content)
     })
     @PostMapping("/signup")
     public ResponseEntity<UserDTO> signUp(@Valid @RequestBody SignUpDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userService.register(dto));
+        UserDTO created = userService.register(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @Operation(summary = "로그인", description = "회원 정보를 확인하고 성공 시 JWT 토큰을 발급합니다.")
+    @Operation(summary = "로그인", description = "JWT 토큰을 발급합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "로그인 성공",
                     content = @Content(schema = @Schema(implementation = LoginDTO.class))),
-            @ApiResponse(responseCode = "401", description = "이메일 또는 비밀번호가 올바르지 않습니다.", content = @Content)
+            @ApiResponse(responseCode = "400", description = "유효성 실패", content = @Content),
+            @ApiResponse(responseCode = "401", description = "로그인 실패", content = @Content)
     })
     @PostMapping("/login")
     public ResponseEntity<LoginDTO> login(@Valid @RequestBody LoginDTO dto) {
@@ -58,7 +60,6 @@ public class UserController {
 
     /* ───────── 프로필 ───────── */
 
-    @Operation(summary = "계정 조회", description = "사용자 정보를 조회합니다.")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공",
@@ -68,26 +69,27 @@ public class UserController {
     })
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getMyProfile(
-            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserPrincipal principal) {
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserPrincipal principal
+    ) {
         return ResponseEntity.ok(userService.getUser(principal.id()));
     }
 
-    @Operation(summary = "계정 수정", description = "사용자 정보를 수정합니다.")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "수정 성공",
                     content = @Content(schema = @Schema(implementation = UserDTO.class))),
+            @ApiResponse(responseCode = "400", description = "유효성 실패", content = @Content),
             @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다.", content = @Content),
             @ApiResponse(responseCode = "404", description = "회원 정보를 찾을 수 없습니다.", content = @Content)
     })
     @PutMapping("/me")
     public ResponseEntity<UserDTO> updateMyProfile(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserPrincipal principal,
-            @Valid @RequestBody UserDTO dto) {
+            @Valid @RequestBody UserDTO dto
+    ) {
         return ResponseEntity.ok(userService.updateUser(principal.id(), dto));
     }
 
-    @Operation(summary = "계정 탈퇴", description = "사용자 정보를 삭제합니다.")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "삭제 성공", content = @Content),
@@ -96,7 +98,8 @@ public class UserController {
     })
     @DeleteMapping("/me")
     public ResponseEntity<Void> deleteMyAccount(
-            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserPrincipal principal) {
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserPrincipal principal
+    ) {
         userService.deleteUser(principal.id());
         return ResponseEntity.noContent().build();
     }

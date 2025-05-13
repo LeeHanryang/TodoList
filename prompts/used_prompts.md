@@ -609,3 +609,27 @@ public class SecurityConfig {
     }
 }
 ```
+
+---
+**File:** `OAuth2AuthenticationFailureHandler.java`
+---
+
+```java
+public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
+
+    @Override
+    public void onAuthenticationFailure(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        AuthenticationException exception) throws IOException {
+
+        String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl)
+                .path("/login?error=true")
+                .build()
+                .toUriString();
+
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    }
+
+}
+
+```
