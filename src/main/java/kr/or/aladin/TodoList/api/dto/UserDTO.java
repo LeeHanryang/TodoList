@@ -37,5 +37,4 @@ public class UserDTO {
                 .updatedAt(entity.getUpdatedAt())
                 .build();
     }
-    
 }
