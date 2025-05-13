@@ -638,3 +638,4 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
 >
 > - LLM을 통한 line 단위 수정 내용은 첨부하지 못하였습니다.
 > - 테스트 코드 및 가독성 강화를 위한 주석 작성에 도움을 받았습니다.
+> - 감사합니다.
