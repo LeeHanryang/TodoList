@@ -11,13 +11,14 @@ import lombok.Getter;
 @Builder
 public class SignUpDTO {
 
-    @NotBlank
+    @NotBlank(message = "사용자 이름을 입력해주세요.")
     private String username;
 
     @NotBlank
     private String password;   // 평문 로그인 PW
 
-    @Email
+    @NotBlank(message = "이메일을 입력해주세요.")
+    @Email(message = "유효한 이메일 형식이어야 합니다.")
     private String email;
 
     /**
