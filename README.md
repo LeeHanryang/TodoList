@@ -102,6 +102,14 @@ Spring Boot 기반의 TodoList RESTful API 프로젝트입니다. 로그인 방�
 
 4. 실행 후 자동으로 SQLite3 파일 기반 DB가 생성되며, 종료 시 삭제됩니다.
 
+---
+
+## 🧪 테스트 코드 커버리지 확인 명령어
+
+   ```bash
+   ./gradlew clean test jacocoTestReport
+   ```
+
 > ⚠️ **리눅스 환경에서 실행 시 주의:**
 > SQLite는 파일 기반 DB이므로 실행 디렉토리(`/src/main/resources/db`)가 존재하지 않으면 애플리케이션이 정상 실행되지 않을 수 있습니다.
 > **Windows 또는 macOS 환경에서의 실행을 권장**합니다.
