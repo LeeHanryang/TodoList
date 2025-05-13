@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.SchemaProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -36,8 +37,7 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "가입 성공",
                     content = @Content(schema = @Schema(implementation = UserDTO.class))),
-            @ApiResponse(responseCode = "400", description = "유효성 실패", content = @Content),
-            @ApiResponse(responseCode = "409", description = "ID/이메일 중복", content = @Content)
+            @ApiResponse(responseCode = "409", description = "이미 사용 중인 아이디 또는 이메일입니다.", content = @Content)
     })
     @PostMapping("/signup")
     public ResponseEntity<UserDTO> signUp(@Valid @RequestBody SignUpDTO dto) {
@@ -49,9 +49,15 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "로그인 성공",
                     content = @Content(schema = @Schema(implementation = LoginDTO.class))),
-            @ApiResponse(responseCode = "400", description = "유효성 실패", content = @Content),
-            @ApiResponse(responseCode = "401", description = "로그인 실패", content = @Content)
+            @ApiResponse(responseCode = "401", description = "이메일 또는 비밀번호가 올바르지 않습니다.", content = @Content)
     })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(content = {@Content(
+            mediaType = "application/json",
+            schemaProperties = {
+                    @SchemaProperty(name = "email", schema = @Schema(implementation = String.class)),
+                    @SchemaProperty(name = "password", schema = @Schema(implementation = String.class))
+            }
+    )})
     @PostMapping("/login")
     public ResponseEntity<LoginDTO> login(@Valid @RequestBody LoginDTO dto) {
         String token = loginService.authenticate(dto);
@@ -60,6 +66,7 @@ public class UserController {
 
     /* ───────── 프로필 ───────── */
 
+    @Operation(summary = "계정 조회", description = "회원 정보를 조회합니다.")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공",
@@ -74,6 +81,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getUser(principal.id()));
     }
 
+    @Operation(summary = "계정 수정", description = "회원 정보를 수정합니다.")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "수정 성공",
@@ -82,6 +90,13 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다.", content = @Content),
             @ApiResponse(responseCode = "404", description = "회원 정보를 찾을 수 없습니다.", content = @Content)
     })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(content = {@Content(
+            mediaType = "application/json",
+            schemaProperties = {
+                    @SchemaProperty(name = "username", schema = @Schema(implementation = String.class)),
+                    @SchemaProperty(name = "email", schema = @Schema(implementation = String.class))
+            }
+    )})
     @PutMapping("/me")
     public ResponseEntity<UserDTO> updateMyProfile(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserPrincipal principal,
@@ -90,6 +105,7 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(principal.id(), dto));
     }
 
+    @Operation(summary = "계정 탈퇴", description = "회원 정보를 삭제 합니다.")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "삭제 성공", content = @Content),

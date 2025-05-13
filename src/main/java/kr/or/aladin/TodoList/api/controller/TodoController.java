@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.SchemaProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -38,7 +39,12 @@ public class TodoController {
             @ApiResponse(responseCode = "404", description = "회원 정보를 찾을 수 없습니다.", content = @Content),
             @ApiResponse(responseCode = "409", description = "이미 존재하는 항목입니다.", content = @Content)
     })
-
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = "application/json",
+            schemaProperties = {
+                    @SchemaProperty(name = "title", schema = @Schema(implementation = String.class)),
+                    @SchemaProperty(name = "description", schema = @Schema(implementation = String.class)),
+            })
+    )
     @PostMapping
     public ResponseEntity<Void> create(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserPrincipal principal,

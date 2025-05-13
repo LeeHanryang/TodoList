@@ -37,15 +37,5 @@ public class UserDTO {
                 .updatedAt(entity.getUpdatedAt())
                 .build();
     }
-
-    /* 필요 시 DTO → Entity 변환용 */
-    public User toEntity(String encodedPw) {
-        return User.builder()
-                .id(this.id)
-                .username(this.username)
-                .password(encodedPw)   // DTO에는 password 미포함
-                .email(this.email)
-                .roles(this.roles)
-                .build();
-    }
+    
 }
