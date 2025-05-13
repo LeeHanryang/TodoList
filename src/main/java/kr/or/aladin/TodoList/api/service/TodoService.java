@@ -1,6 +1,5 @@
 package kr.or.aladin.TodoList.api.service;
 
-import jakarta.transaction.Transactional;
 import kr.or.aladin.TodoList.api.domain.Todo;
 import kr.or.aladin.TodoList.api.domain.User;
 import kr.or.aladin.TodoList.api.dto.TodoDTO;
@@ -10,6 +9,7 @@ import kr.or.aladin.TodoList.enums.ErrorCodeEnum;
 import kr.or.aladin.TodoList.exception.ApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,6 +17,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)   // 클래스 레벨로 기본을 read-only 로 설정
 public class TodoService {
     private final TodoRepository todoRepository;
     private final UserRepository userRepository;
@@ -42,6 +43,7 @@ public class TodoService {
         return todo.toDto();
     }
 
+    @Transactional
     public TodoDTO update(UUID id, TodoDTO dto) {
         Todo todo = todoRepository.findById(id)
                 .orElseThrow(() -> new ApiException(ErrorCodeEnum.TODO_DETAIL_NOT_FOUND));
@@ -50,6 +52,7 @@ public class TodoService {
         return todoRepository.save(todo).toDto();
     }
 
+    @Transactional
     public void delete(UUID id) {
         Todo todo = todoRepository.findById(id)
                 .orElseThrow(() -> new ApiException(ErrorCodeEnum.TODO_DETAIL_NOT_FOUND));

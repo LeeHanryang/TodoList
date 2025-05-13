@@ -38,10 +38,12 @@ public class User {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<SocialAccount> socialAccounts = new HashSet<>();
 
     /* 권한 문자열 – 예: ROLE_USER, ROLE_ADMIN */
+    @Builder.Default
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"))

@@ -1,6 +1,7 @@
 package kr.or.aladin.TodoList.security.oauth2;
 
 import kr.or.aladin.TodoList.api.dto.UserDTO;
+import kr.or.aladin.TodoList.api.service.CustomOAuth2UserService;
 import kr.or.aladin.TodoList.api.service.UserService;
 import kr.or.aladin.TodoList.security.jwt.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +32,8 @@ class OAuth2AuthenticationSuccessHandlerTest {
     private JwtUtil jwtUtil;
     @Mock
     private UserService userService;
+    @Mock
+    private CustomOAuth2UserService customOAuth2UserService;
     @Mock
     private OAuth2Util oAuth2Util;
     @Mock
@@ -74,7 +77,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
                 .roles(Set.of("ROLE_USER"))
                 .build();
 
-        when(userService.processOAuth2User(
+        when(customOAuth2UserService.processOAuth2User(
                 "kakao_user", "kakao@test.com", "encodedPwd", provider, "kk-id"
         )).thenReturn(userDto);
 
@@ -97,7 +100,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
         verify(oAuth2Util).extractProviderId(provider, attrs);
         verify(oAuth2Util).extractEmail(provider, attrs);
         verify(oAuth2Util).extractUserName(provider);
-        verify(userService).processOAuth2User(
+        verify(customOAuth2UserService).processOAuth2User(
                 "kakao_user", "kakao@test.com", "encodedPwd", provider, "kk-id"
         );
         verify(jwtUtil).generateToken(

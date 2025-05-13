@@ -7,6 +7,7 @@ import kr.or.aladin.TodoList.exception.RestAccessDeniedHandler;
 import kr.or.aladin.TodoList.exception.RestAuthenticationEntryPoint;
 import kr.or.aladin.TodoList.security.jwt.JwtAuthenticationFilter;
 import kr.or.aladin.TodoList.security.jwt.JwtUtil;
+import kr.or.aladin.TodoList.security.oauth2.OAuth2AuthenticationFailureHandler;
 import kr.or.aladin.TodoList.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import kr.or.aladin.TodoList.security.principal.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
@@ -35,6 +38,7 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final RestAuthenticationEntryPoint authenticationEntryPoint;
     private final RestAccessDeniedHandler accessDeniedHandler;
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler; // 추가
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
@@ -42,7 +46,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, CustomOAuth2UserService oAuth2UserService, OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler) throws Exception {
+    public SecurityFilterChain filterChain(
+            HttpSecurity http, CustomOAuth2UserService oAuth2UserService,
+            OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
+            AuthenticationFailureHandler authenticationFailureHandler) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -57,7 +64,6 @@ public class SecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/**",
                                 "/users/signup",
                                 "/users/login",
                                 "/swagger-ui/**",
@@ -70,6 +76,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(u -> u.userService(oAuth2UserService))
                         .successHandler(oAuth2AuthenticationSuccessHandler)
+                        .failureHandler(oAuth2AuthenticationFailureHandler)
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 

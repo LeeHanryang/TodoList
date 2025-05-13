@@ -44,7 +44,7 @@ public class UserController {
                 .body(userService.register(dto));
     }
 
-    @Operation(summary = "로그인", description = "JWT 토큰을 발급합니다.")
+    @Operation(summary = "로그인", description = "회원 정보를 확인하고 성공 시 JWT 토큰을 발급합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "로그인 성공",
                     content = @Content(schema = @Schema(implementation = LoginDTO.class))),

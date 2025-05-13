@@ -3,7 +3,7 @@ package kr.or.aladin.TodoList.security.oauth2;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.or.aladin.TodoList.api.dto.UserDTO;
-import kr.or.aladin.TodoList.api.service.UserService;
+import kr.or.aladin.TodoList.api.service.CustomOAuth2UserService;
 import kr.or.aladin.TodoList.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +23,7 @@ import java.util.UUID;
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;
-    private final UserService userService;
+    private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2Util oAuth2Util;
     private final PasswordEncoder passwordEncoder;
 
@@ -47,7 +47,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String username = oAuth2Util.extractUserName(provider);
 
         // OAuth2 제공자로부터 받은 정보로 사용자 조회 또는 생성
-        UserDTO user = userService.processOAuth2User(
+        UserDTO user = customOAuth2UserService.processOAuth2User(
                 username,
                 email,
                 passwordEncoder.encode(UUID.randomUUID().toString()),

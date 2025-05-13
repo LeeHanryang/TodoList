@@ -30,7 +30,7 @@ public class TodoController {
 
     private final TodoService todoService;
 
-    @Operation(summary = "Todo 생성", description = "새로운 Todo 항목을 생성합니다.")
+    @Operation(summary = "Todo 생성", description = "Todo를 생성합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "생성 성공"),
             @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다.", content = @Content),
@@ -46,7 +46,7 @@ public class TodoController {
         return ResponseEntity.created(URI.create("/todos/" + saved.getId())).build();
     }
 
-    @Operation(summary = "Todo 목록 조회", description = "로그인 사용자의 Todo 목록을 최신순으로 반환합니다.")
+    @Operation(summary = "Todo 목록 조회", description = "사용자의 Todo 목록을 최신순으로 반환합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공",
                     content = @Content(schema = @Schema(implementation = TodoDTO.class))),
@@ -59,7 +59,7 @@ public class TodoController {
         return ResponseEntity.ok(todoService.findAll(principal.id()));
     }
 
-    @Operation(summary = "Todo 상세 조회", description = "Todo ID 로 상세 정보를 조회합니다.")
+    @Operation(summary = "Todo 상세 조회", description = "Todo ID로 상세 정보를 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공",
                     content = @Content(schema = @Schema(implementation = TodoDTO.class))),
@@ -72,7 +72,7 @@ public class TodoController {
         return ResponseEntity.ok(todoService.findById(id));
     }
 
-    @Operation(summary = "Todo 수정", description = "Todo ID 에 해당하는 항목을 수정합니다.")
+    @Operation(summary = "Todo 수정", description = "Todo ID에 해당하는 항목을 수정합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "수정 성공",
                     content = @Content(schema = @Schema(implementation = TodoDTO.class))),
@@ -86,7 +86,7 @@ public class TodoController {
         return ResponseEntity.ok(todoService.update(id, dto));
     }
 
-    @Operation(summary = "Todo 삭제", description = "Todo ID 에 해당하는 항목을 삭제합니다.")
+    @Operation(summary = "Todo 삭제", description = "Todo ID에 해당하는 항목을 삭제합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "삭제 성공", content = @Content),
             @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다.", content = @Content),
@@ -99,7 +99,7 @@ public class TodoController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Todo 검색", description = "제목 키워드로 Todo 를 검색합니다.")
+    @Operation(summary = "Todo 검색", description = "제목으로 Todo 를 검색합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "검색 성공",
                     content = @Content(schema = @Schema(implementation = TodoDTO.class))),

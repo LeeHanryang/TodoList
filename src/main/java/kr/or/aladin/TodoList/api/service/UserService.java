@@ -1,31 +1,27 @@
 package kr.or.aladin.TodoList.api.service;
 
 
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import kr.or.aladin.TodoList.api.domain.SocialAccount;
 import kr.or.aladin.TodoList.api.domain.User;
 import kr.or.aladin.TodoList.api.dto.SignUpDTO;
 import kr.or.aladin.TodoList.api.dto.UserDTO;
-import kr.or.aladin.TodoList.api.repository.SocialAccountRepository;
 import kr.or.aladin.TodoList.api.repository.UserRepository;
 import kr.or.aladin.TodoList.enums.ErrorCodeEnum;
-import kr.or.aladin.TodoList.enums.OAuth2Enum;
 import kr.or.aladin.TodoList.enums.RoleEnum;
 import kr.or.aladin.TodoList.exception.ApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
 
     private final UserRepository userRepository;
-    private final SocialAccountRepository socialAccountRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -84,38 +80,11 @@ public class UserService {
         return userRepository.save(user).toDto();
     }
 
+    @Transactional
     public void deleteUser(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ApiException(ErrorCodeEnum.USER_NOT_FOUND));
 
         userRepository.delete(user);
-    }
-
-    @Transactional
-    public UserDTO processOAuth2User(String username, String email, String encodedPassword,
-                                     String provider, String providerId) {
-        OAuth2Enum providerEnum = OAuth2Enum.from(provider);
-        // 같은 소셜 계정이 등록되어 있는지 확인
-        Optional<SocialAccount> existingSA =
-                socialAccountRepository.findByProviderAndProviderId(providerEnum, providerId);
-        if (existingSA.isPresent()) {
-            return UserDTO.from(existingSA.get().getUser());
-        }
-
-        // 같은 이메일로 가입된 계정이 있는지 확인
-        User user = userRepository.findByEmail(email)
-                .orElseGet(() -> {
-                    // 신규 계정 생성
-                    User newUser = User.create(username, encodedPassword, email);
-                    newUser.addRole(RoleEnum.USER.getRole());
-                    return userRepository.save(newUser);
-                });
-
-        // SocialAccount 등록
-        socialAccountRepository.save(
-                SocialAccount.of(user, providerEnum, providerId)
-        );
-
-        return UserDTO.from(user);
     }
 }
