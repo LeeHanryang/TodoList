@@ -8,6 +8,15 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
+/**
+ * User Entity 관련 기능 통합 테스트
+ * <p>
+ * - create(): 기본 필드 초기화 검증
+ * - addSocialAccount/removeSocialAccount: 소셜 계정 관리 검증
+ * - addRole/removeRole: 권한 추가·제거 검증
+ * - 필드 변경(changeUsername, changePassword, changeEmail) 검증
+ * - toDto(): DTO 변환 기능 검증
+ */
 class UserEntityTest {
 
     private static final String TEST_USER = "testUser";
@@ -17,10 +26,10 @@ class UserEntityTest {
     @Test
     @DisplayName("User.create() 기본 필드 검증")
     void create_defaults() {
-        // when
+        // When: 기본 생성 메서드 호출
         User user = User.create(TEST_USER, TEST_PASSWORD, TEST_EMAIL);
 
-        // then
+        // Then: 필드 초기값 확인, 소셜·역할 컬렉션 비어있음
         assertThat(user.getUsername()).isEqualTo(TEST_USER);
         assertThat(user.getPassword()).isEqualTo(TEST_PASSWORD);
         assertThat(user.getEmail()).isEqualTo(TEST_EMAIL);
@@ -31,38 +40,40 @@ class UserEntityTest {
     @Test
     @DisplayName("소셜 계정·권한 추가/제거 편의 메서드")
     void socialAndRole_management() {
-        // given
+        // Given: 초기 User 엔티티
         User user = User.create(TEST_USER, TEST_PASSWORD, TEST_EMAIL);
 
-        // when
+        // When: 소셜 계정 추가
         user.addSocialAccount(OAuth2Enum.NAVER, "naver-999");
 
-        // then
+        // Then: 소셜 계정 정보 검증
         assertThat(user.getSocialAccounts())
                 .extracting("provider", "providerId")
                 .containsExactly(tuple(OAuth2Enum.NAVER, "naver-999"));
 
-        // 역할 추가/제거 검증
+        // When: 역할 추가
         user.addRole("ROLE_USER");
+        // Then: 역할 목록에 포함
         assertThat(user.getRoles()).contains("ROLE_USER");
 
+        // When: 역할 제거
         user.removeRole("ROLE_USER");
+        // Then: 역할 목록에서 제외
         assertThat(user.getRoles()).doesNotContain("ROLE_USER");
     }
-
 
     @Test
     @DisplayName("필드 변경 메서드 검증")
     void field_change_methods() {
-        // given
+        // Given: 초기 User 엔티티
         User user = User.create(TEST_USER, TEST_PASSWORD, TEST_EMAIL);
 
-        // when
+        // When: 필드 변경 메서드 호출
         user.changeUsername("newName");
         user.changePassword("newPass");
         user.changeEmail("new@test.com");
 
-        // then
+        // Then: 변경된 필드 값 검증
         assertThat(user.getUsername()).isEqualTo("newName");
         assertThat(user.getPassword()).isEqualTo("newPass");
         assertThat(user.getEmail()).isEqualTo("new@test.com");
@@ -71,14 +82,14 @@ class UserEntityTest {
     @Test
     @DisplayName("toDto() 변환 검증")
     void toDto_conversion() {
-        // given
+        // Given: User 엔티티에 역할 추가
         User user = User.create(TEST_USER, TEST_PASSWORD, TEST_EMAIL);
         user.addRole("ROLE_ADMIN");
 
-        // when
+        // When: DTO 변환
         UserDTO dto = user.toDto();
 
-        // then
+        // Then: DTO 필드 매핑 검증
         assertThat(dto.getUsername()).isEqualTo(TEST_USER);
         assertThat(dto.getEmail()).isEqualTo(TEST_EMAIL);
         assertThat(dto.getRoles()).contains("ROLE_ADMIN");

@@ -17,7 +17,6 @@ import java.util.UUID;
 public class LoginDTO {
     private UUID id;
 
-    @NotBlank(message = "사용자 이름을 입력해주세요.")
     private String username;
 
     @NotBlank(message = "이메일을 입력해주세요")

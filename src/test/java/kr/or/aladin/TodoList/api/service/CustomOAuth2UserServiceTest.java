@@ -26,6 +26,12 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+/**
+ * CustomOAuth2UserService 단위 테스트
+ * <p>
+ * - loadUser(): OAuth2User 반환 및 processOAuth2User 호출 검증
+ * - processOAuth2User(): 기존 소셜 계정 존재, 이메일 사용자 존재, 신규 사용자 분기 검증
+ */
 class CustomOAuth2UserServiceTest {
 
     private final String username = "oauthUser";
@@ -59,19 +65,12 @@ class CustomOAuth2UserServiceTest {
     @Test
     @DisplayName("loadUser()는 OAuth2User를 반환하고 userService를 호출한다")
     void loadUser_success() {
-        // given
-        String provider = "google";
-        String providerId = "123456";
-        String email = "test@example.com";
+        // Given: OAuth2UserRequest 및 프로바이더 정보 설정
         String username = "google_user";
-        String encodedPassword = "encoded-password";
 
         User user = User.create(username, encodedPassword, email);
         when(userRepository.save(any())).thenReturn(user);
-
-
         Map<String, Object> attributes = Map.of("sub", providerId, "email", email);
-
         when(userRequest.getClientRegistration()).thenReturn(clientRegistration);
         when(clientRegistration.getRegistrationId()).thenReturn(provider);
         when(oAuth2Util.extractProviderId(provider, attributes)).thenReturn(providerId);
@@ -80,30 +79,33 @@ class CustomOAuth2UserServiceTest {
         when(oAuth2Util.getNameAttributeKey(provider)).thenReturn("sub");
         when(passwordEncoder.encode(any())).thenReturn(encodedPassword);
         when(mockOAuth2User.getAttributes()).thenReturn(attributes);
-
         CustomOAuth2UserService spyService = spy(customOAuth2UserService);
         doReturn(mockOAuth2User).when(spyService).delegateLoadUser(userRequest);
 
-        // when
+        // When: loadUser 호출
         OAuth2User result = spyService.loadUser(userRequest);
 
-        // then
+        // Then: processOAuth2User 호출 및 권한 검증
         verify(spyService).processOAuth2User(username, email, encodedPassword, provider, providerId);
         assertThat(result.getAttributes()).isEqualTo(attributes);
-        assertThat(result.getAuthorities()).anyMatch(auth -> auth.getAuthority().equals(RoleEnum.USER.getRole()));
+        assertThat(result.getAuthorities())
+                .anyMatch(auth -> auth.getAuthority().equals(RoleEnum.USER.getRole()));
     }
 
     @Test
     @DisplayName("이미 등록된 소셜 계정이 있는 경우 기존 유저 반환")
     void existingSocialAccount() {
+        // Given: 소셜 계정이 이미 존재하는 상황
         User user = User.create(username, encodedPassword, email);
         SocialAccount socialAccount = SocialAccount.of(user, OAuth2Enum.GOOGLE, providerId);
-
         when(socialAccountRepository.findByProviderAndProviderId(OAuth2Enum.GOOGLE, providerId))
                 .thenReturn(Optional.of(socialAccount));
 
-        UserDTO result = customOAuth2UserService.processOAuth2User(username, email, encodedPassword, provider, providerId);
+        // When: processOAuth2User 호출
+        UserDTO result = customOAuth2UserService.processOAuth2User(
+                username, email, encodedPassword, provider, providerId);
 
+        // Then: 기존 유저 반환, 저장 메서드 호출 없음
         AssertionsForClassTypes.assertThat(result.getEmail()).isEqualTo(email);
         verify(userRepository, never()).save(any());
         verify(socialAccountRepository, never()).save(any());
@@ -112,13 +114,17 @@ class CustomOAuth2UserServiceTest {
     @Test
     @DisplayName("기존 이메일 유저가 있고 소셜 계정만 연결하는 경우")
     void existingEmailUser() {
+        // Given: 이메일 기반 사용자만 존재
         User user = User.create(username, encodedPassword, email);
         when(socialAccountRepository.findByProviderAndProviderId(OAuth2Enum.GOOGLE, providerId))
                 .thenReturn(Optional.empty());
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
 
-        UserDTO result = customOAuth2UserService.processOAuth2User(username, email, encodedPassword, provider, providerId);
+        // When: processOAuth2User 호출
+        UserDTO result = customOAuth2UserService.processOAuth2User(
+                username, email, encodedPassword, provider, providerId);
 
+        // Then: 소셜 계정 저장만 호출, 사용자 저장은 미호출
         AssertionsForClassTypes.assertThat(result.getEmail()).isEqualTo(email);
         verify(socialAccountRepository).save(any());
         verify(userRepository, never()).save(any());
@@ -127,15 +133,18 @@ class CustomOAuth2UserServiceTest {
     @Test
     @DisplayName("이메일도 소셜도 모두 없을 경우 새 유저 생성")
     void newUserAndSocialAccount() {
+        // Given: 이메일 및 소셜 계정 모두 미존재
         when(socialAccountRepository.findByProviderAndProviderId(OAuth2Enum.GOOGLE, providerId))
                 .thenReturn(Optional.empty());
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
-
         User savedUser = User.create(username, encodedPassword, email);
         when(userRepository.save(any())).thenReturn(savedUser);
 
-        UserDTO result = customOAuth2UserService.processOAuth2User(username, email, encodedPassword, provider, providerId);
+        // When: processOAuth2User 호출
+        UserDTO result = customOAuth2UserService.processOAuth2User(
+                username, email, encodedPassword, provider, providerId);
 
+        // Then: 사용자 및 소셜 계정 저장 모두 호출
         AssertionsForClassTypes.assertThat(result.getEmail()).isEqualTo(email);
         verify(userRepository).save(any());
         verify(socialAccountRepository).save(any());
