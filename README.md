@@ -121,7 +121,6 @@ Spring Boot 기반의 TodoList RESTful API 프로젝트입니다. 로그인 방�
 ↳ 리포트 위치: [디렉터리/build/reports/jacoco/test/html/index.html]
 > ℹ️ `main()` 함수 기반의 실행 테스트는 실제 서버 기동을 포함하므로, 테스트 커버리지 집계에서 **제외**하였습니다.
 >
-> ⚠️ .md 실행 버튼이 아닌 터미널로 직접 실행해야 동작합니다.
 
 ## 추가 설정
 
