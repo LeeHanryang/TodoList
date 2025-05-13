@@ -113,6 +113,8 @@ Spring Boot 기반의 TodoList RESTful API 프로젝트입니다. 로그인 방�
    ./gradlew clean test jacocoTestReport
    ```
 
+↳ 리포트 위치: [디렉터리/build/reports/jacoco/test/html/index.html]
+
 ## 추가 설정
 
 * 필요 시 `application.properties`에서 OAuth2 클라이언트 ID, 시크릿 등을 설정해주세요.
