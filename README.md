@@ -126,5 +126,6 @@ Spring Boot 기반의 TodoList RESTful API 프로젝트입니다. 로그인 방�
 
 * 필요 시 `application.properties`에서 OAuth2 클라이언트 ID, 시크릿 등을 설정해주세요.
 * JWT key, 만료 시간 등도 설정할 수 있습니다.
+* application.properties 파일을 설정해야합니다.
 
 ---
